@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1"
+  />
+
+  <title>Humanoid Family - Advanced Multitasking</title>
+  <meta
+    property="og:title"
+    content="Humanoid Family - Advanced Multitasking"
+  />
+  <meta
+    property="og:description"
+    content="Experience the world's most advanced multitasking humanoid family. Switch modes: Humanoid, Car, Education, Healthcare, and more."
+  />
+  <meta property="og:type" content="website" />
+  <meta
+    property="og:image"
+    content="https://replit.com/public/images/opengraph.png"
+  />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@replit" />
+  <meta
+    name="twitter:title"
+    content="Humanoid Family - Advanced Multitasking"
+  />
+  <meta
+    name="twitter:description"
+    content="Experience the world's most advanced multitasking humanoid family. Switch modes: Humanoid, Car, Education, Healthcare, and more."
+  />
+  <meta
+    name="twitter:image"
+    content="https://replit.com/public/images/opengraph.png"
+  />
+
+  <!-- Favicon (optional, will just be ignored if not present) -->
+  <link rel="icon" type="image/png" href="/favicon.png" />
+
+  <!-- Fonts: Inter + Rajdhani (like Replit version) -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Rajdhani:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+
+  <style>
+    :root {
+      --bg: hsl(220, 40%, 4%);
+      --fg: hsl(210, 20%, 90%);
+      --primary: hsl(190, 100%, 50%);
+      --primary-soft: hsla(190, 100%, 50%, 0.15);
+      --muted: hsl(215, 15%, 60%);
+      --border: hsl(220, 20%, 15%);
+      --card-bg: hsl(220, 35%, 8%);
+      --hud-bg: rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection {
+      background: rgba(0, 255, 255, 0.3);
+    }
+
+    .font-display {
+      font-family: "Rajdhani", system-ui, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+
+    .text-glow {
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    }
+
+    .box-glow {
+      box-shadow: 0 0 20px -5px rgba(0, 255, 255, 0.35);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    /* HERO SECTION */
+    .hero {
+      position: relative;
+      height: 50vh;
+      min-height: 320px;
+      width: 100%;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url("https://www.shutterstock.com/image-illustration/prototype-mother-3d-illustration-metallic-260nw-2147335953.jpg");
+      background-size: cover;
+      background-position: center;
+      opacity: 0.6;
+      z-index: 0;
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(
+        to top,
+        rgba(4, 8, 20, 1),
+        rgba(4, 8, 20, 0.7),
+        transparent
+      );
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 0 1rem;
+    }
+
+    .hero-title {
+      font-size: clamp(2.2rem, 4vw, 3.5rem);
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.6rem;
+    }
+
+    .hero-subtitle {
+      color: var(--primary);
+      font-size: clamp(1rem, 2vw, 1.3rem);
+      font-weight: 500;
+    }
+
+    /* MODE NAVBAR */
+    .mode-nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(4, 8, 20, 0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .mode-nav-inner {
+      overflow-x: auto;
+    }
+
+    .mode-nav-list {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      min-width: max-content;
+    }
+
+    .mode-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.6rem 1.4rem;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: rgba(180, 190, 210, 0.9);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      font-family: "Rajdhani", system-ui, sans-serif;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      transition: background 0.25s, color 0.25s, border-color 0.25s,
+        transform 0.15s;
+      white-space: nowrap;
+    }
+
+    .mode-button span.icon {
+      font-size: 0.95rem;
+    }
+
+    .mode-button:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: #fff;
+    }
+
+    .mode-button.active {
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-color: rgba(0, 255, 255, 0.6);
+      box-shadow: 0 0 20px -5px rgba(0, 255, 255, 0.5);
+    }
+
+    /* MAIN CONTENT */
+    main {
+      padding: 3rem 0;
+      min-height: 40vh;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 3rem;
+      align-items: flex-start;
+    }
+
+    @media (max-width: 768px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 255, 255, 0.45);
+      color: var(--primary);
+      font-size: 0.7rem;
+      font-family: monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 1rem;
+    }
+
+    .mode-heading {
+      font-family: "Rajdhani", system-ui, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .mode-heading span {
+      color: var(--primary);
+    }
+
+    .mode-description {
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 36rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* RIGHT HUD PANEL */
+    .hud-panel {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: var(--hud-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hud-scan {
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(
+        45deg,
+        transparent 25%,
+        rgba(68, 255, 255, 0.08) 50%,
+        transparent 75%,
+        transparent 100%
+      );
+      background-size: 250% 250%;
+      animation: shimmer 5s linear infinite;
+      opacity: 0.75;
+      pointer-events: none;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 0% 0%;
+      }
+      100% {
+        background-position: 100% 100%;
+      }
+    }
+
+    .hud-inner {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .hud-icon {
+      font-size: 3rem;
+      margin-bottom: 0.75rem;
+      opacity: 0.8;
+    }
+
+    .hud-status {
+      font-family: monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: rgba(0, 255, 255, 0.6);
+    }
+
+    .hud-dot {
+      position: absolute;
+      top: 0.9rem;
+      left: 0.9rem;
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 999px;
+      background: var(--primary);
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.9);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1.9);
+        opacity: 0;
+      }
+    }
+
+    .hud-version {
+      position: absolute;
+      right: 1rem;
+      bottom: 0.75rem;
+      font-size: 0.7rem;
+      font-family: monospace;
+      color: rgba(0, 255, 255, 0.4);
+    }
+
+    .hud-bars {
+      position: absolute;
+      top: 0.8rem;
+      right: 0.9rem;
+      display: flex;
+      gap: 0.18rem;
+    }
+
+    .hud-bar {
+      width: 0.18rem;
+      height: 0.7rem;
+      background: rgba(0, 255, 255, 0.45);
+    }
+
+    /* MODE ICONS (simple emojis for now, very lightweight) */
+    .mode-icon-humanoid::before {
+      content: "🤖";
+    }
+
+    .mode-icon-car::before {
+      content: "🚗";
+    }
+
+    .mode-icon-shopkeeper::before {
+      content: "🛒";
+    }
+
+    .mode-icon-education::before {
+      content: "🎓";
+    }
+
+    .mode-icon-healthcare::before {
+      content: "❤️";
+    }
+
+    .mode-icon-tracking::before {
+      content: "📍";
+    }
+
+    /* ANIMATION FOR CONTENT SWITCH (minimal fade + slide) */
+    .fade-slide {
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .fade-slide.active-block {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* === CONTROL PANELS (LEFT COLUMN) === */
+
+    .controls-wrapper {
+      margin-top: 1.5rem;
+    }
+
+    .controls-set {
+      display: none;
+    }
+
+    .controls-set.active-controls {
+      display: block;
+    }
+
+    .control-section {
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(10, 16, 35, 0.85);
+      padding: 1.1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .control-title {
+      font-family: "Rajdhani", system-ui, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      font-size: 0.9rem;
+      color: var(--primary);
+      margin-bottom: 0.6rem;
+    }
+
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .ctrl-btn,
+    .ctrl-toggle {
+      padding: 0.4rem 0.9rem;
+      font-size: 0.85rem;
+      border-radius: 6px;
+      border: 1px solid rgba(0, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--fg);
+      cursor: pointer;
+      font-family: "Rajdhani", system-ui, sans-serif;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .ctrl-btn:hover {
+      background: rgba(0, 255, 255, 0.09);
+      box-shadow: 0 0 14px -6px rgba(0, 255, 255, 0.7);
+    }
+
+    .ctrl-toggle {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .ctrl-toggle.toggle-on {
+      background: var(--primary);
+      color: var(--bg);
+      border-color: var(--primary);
+      box-shadow: 0 0 18px -6px rgba(0, 255, 255, 0.9);
+    }
+
+    .slider-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 0.3rem;
+    }
+
+    .slider-row label {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .slider-row span {
+      font-family: monospace;
+      color: var(--primary);
+      font-size: 0.85rem;
+    }
+
+    .slider-row input[type="range"] {
+      flex: 1;
+      min-width: 140px;
+    }
+
+    .checkbox-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.9rem;
+      margin-top: 0.4rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .checkbox-row label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      cursor: pointer;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    /* === EDUCATION MODE AI BUTTONS (COMPACT) === */
+.ai-button-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 1rem;
+}
+
+.ai-button {
+  background: linear-gradient(135deg, #00bcd4, #008cff);
+  color: white;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 0 10px rgba(0, 200, 255, 0.5);
+  transition: all 0.25s ease;
+  width: 220px;                 /* 👈 smaller width */
+  user-select: none;
+  position: relative;
+}
+
+.ai-button:hover {
+  background: linear-gradient(135deg, #00e5ff, #00a2ff);
+  box-shadow: 0 0 18px rgba(0, 230, 255, 0.85);
+}
+
+.ai-icon {
+  width: 18px;                  /* 👈 smaller icon */
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.ai-tooltip {
+  position: absolute;
+  bottom: 115%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(8, 16, 32, 0.95);
+  color: #ccf;
+  padding: 7px 9px;
+  border-radius: 7px;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  width: 240px;
+  text-align: left;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  box-shadow: 0 0 12px rgba(0, 200, 255, 0.45);
+  z-index: 999;
+}
+
+.ai-button:hover .ai-tooltip {
+  opacity: 1;
+}
+  </style>
+</head>
+<body>
+  <button id="scheduleBtn">⏰ Schedule Tasks</button>
+<div id="schedulerPanel" style="
+  display:none;
+  position:fixed;
+  top:50px;
+  left:12px;
+  width:280px;
+  background:rgba(0,0,0,0.9);
+  border:1px solid rgba(0,255,255,0.4);
+  border-radius:10px;
+  padding:12px;
+  z-index:9999;
+  font-size:0.75rem;
+  color:#ccffff;
+">
+
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <strong>Task Scheduler</strong>
+    <button onclick="addSchedule()">＋</button>
+  </div>
+
+  <div style="margin-top:8px">
+    <label>Time</label><br>
+    <input type="number" id="schHour" min="0" max="23" placeholder="HH" style="width:60px">
+    <input type="number" id="schMin" min="0" max="59" placeholder="MM" style="width:60px">
+    <input type="number" id="schSec" min="0" max="59" placeholder="SS" style="width:60px">
+  </div>
+
+  <div style="margin-top:8px">
+    <label>Repeat Days</label><br>
+    <label><input type="checkbox" value="1"> Mon</label>
+    <label><input type="checkbox" value="2"> Tue</label>
+    <label><input type="checkbox" value="3"> Wed</label>
+    <label><input type="checkbox" value="4"> Thu</label>
+    <label><input type="checkbox" value="5"> Fri</label>
+    <label><input type="checkbox" value="6"> Sat</label>
+    <label><input type="checkbox" value="0"> Sun</label>
+  </div>
+
+  <div style="margin-top:8px">
+    <label>Task</label><br>
+    <select id="taskSelect" style="width:100%">
+      <option value="/washing/start">Washing Machine – Start</option>
+      <option value="/dishwasher/start">Dishwasher – Start</option>
+      <option value="/toggle/vacuum/on">Vacuum & Mop</option>
+      <option value="/toggle/watering/on">Watering Plants</option>
+      <option value="/toggle/weed_cutter/on">Weed Cutter</option>
+    </select>
+  </div>
+
+  <div id="scheduleList" style="margin-top:10px"></div>
+</div>
+  <!-- HERO SECTION -->
+  <header class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-inner">
+      <h1 class="hero-title font-display text-glow">WELCOME TO THE FUTURE</h1>
+      <p class="hero-subtitle font-display">
+        WORLD'S MOST ADVANCED MULTITASKING HUMANOID FAMILY
+      </p>
+    </div>
+  </header>
+
+  <!-- MODE SELECTOR NAV -->
+  <nav class="mode-nav">
+    <div class="container mode-nav-inner">
+      <div class="mode-nav-list" id="modeButtons">
+        <!-- Buttons created by JS -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <div class="container">
+      <div class="content-grid">
+        <!-- LEFT SIDE: TEXT AREA + CONTROLS -->
+        <section id="textColumn" class="fade-slide active-block">
+          <div class="status-pill">SYSTEM STATUS: ONLINE</div>
+          <h2 id="modeTitle" class="mode-heading">
+            HUMANOID <span>MODE</span>
+          </h2>
+          <p id="modeDescription" class="mode-description">
+            General purpose assistance and companionship. This mode optimizes the
+            humanoid's neural networks for everyday interaction, multitasking,
+            and adaptive responses.
+          </p>
+
+          <!-- CONTROL PANELS HERE -->
+          <div class="controls-wrapper">
+            <!-- HUMANOID: ALL SECTIONS -->
+            <div id="controls-humanoid" class="controls-set active-controls">
+              <!-- Movement -->
+              <div class="control-section">
+                <div class="control-title">Movement</div>
+                <div class="control-row">
+                  <button class="ctrl-btn" onclick="sendCommand('/move/forward')">Forward</button>
+                  <button class="ctrl-btn" onclick="sendCommand('/move/backward')">Backward</button>
+                  <button class="ctrl-btn" onclick="sendCommand('/move/left')">Left</button>
+                  <button class="ctrl-btn" onclick="sendCommand('/move/right')">Right</button>
+                  <button class="ctrl-btn" onclick="sendCommand('/move/stop')">Brake</button>
+                </div>
+                <div class="slider-row">
+                  <label for="speedSliderHum">Speed:
+                    <span id="speedValueHum">0</span>
+                  </label>
+                  <input type="range" id="speedSliderHum" min="0" max="255" value="0" />
+                </div>
+              </div>
+
+              <!-- Neck Movement -->
+              <div class="control-section">
+                <div class="control-title">Neck Movement</div>
+                <div class="slider-row">
+                  <label for="neckUpDownHum">Up-Down:
+                    <span id="neckUpDownValHum">90</span>°
+                  </label>
+                  <input type="range" id="neckUpDownHum" min="0" max="180" value="90" />
+                </div>
+                <div class="slider-row">
+                  <label for="neckLeftRightHum">Left-Right:
+                    <span id="neckLeftRightValHum">90</span>°
+                  </label>
+                  <input type="range" id="neckLeftRightHum" min="0" max="180" value="90" />
+                </div>
+              </div>
+
+              <!-- Shoulder Movement -->
+              <div class="control-section">
+                <div class="control-title">Shoulder Movement</div>
+                <div class="control-row">
+                  <button class="ctrl-btn" onclick="sendCommand('/shoulder/front')">Front</button>
+                  <button class="ctrl-btn" onclick="sendCommand('/shoulder/back')">Back</button>
+                  <button class="ctrl-btn" onclick="sendCommand('/shoulder/right')">Right</button>
+                  <button class="ctrl-btn" onclick="sendCommand('/shoulder/left')">Left</button>
+                </div>
+              </div>
+
+              <!-- Left Arm Movement -->
+              <div class="control-section">
+                <div class="control-title">Left Arm Movement</div>
+                <div class="slider-row">
+                  <label for="leftShoulderHum">Shoulder Up-Down:
+                    <span id="leftShoulderValHum">90</span>°
+                  </label>
+                  <input type="range" id="leftShoulderHum" min="0" max="180" value="90" />
+                </div>
+                <div class="slider-row">
+                  <label for="leftBackArmHum">Back-Arm Up-Down:
+                    <span id="leftBackArmValHum">90</span>°
+                  </label>
+                  <input type="range" id="leftBackArmHum" min="0" max="180" value="90" />
+                </div>
+                <div class="slider-row">
+                  <label for="leftForeArmHum">Fore-Arm Up-Down:
+                    <span id="leftForeArmValHum">90</span>°
+                  </label>
+                  <input type="range" id="leftForeArmHum" min="0" max="180" value="90" />
+                </div>
+                <div class="slider-row">
+                  <label for="leftForeRotateHum">Fore-Arm Rotate:
+                    <span id="leftForeRotateValHum">90</span>°
+                  </label>
+                  <input type="range" id="leftForeRotateHum" min="0" max="180" value="90" />
+                </div>
+                <div class="slider-row">
+                  <label for="leftFistHum">Fist-Open:
+                    <span id="leftFistValHum">90</span>°
+                  </label>
+                  <input type="range" id="leftFistHum" min="0" max="180" value="90" />
+                </div>
+              </div>
+
+              <!-- Right Arm Movement -->
+              <div class="control-section">
+                <div class="control-title">Right Arm Movement</div>
+                <div class="slider-row">
+                  <label for="rightShoulderHum">Shoulder Up-Down:
+                    <span id="rightShoulderValHum">90</span>°
+                  </label>
+                  <input type="range" id="rightShoulderHum" min="0" max="180" value="90" />
+                </div>
+                <div class="slider-row">
+                  <label for="rightBackArmHum">Back-Arm Up-Down:
+                    <span id="rightBackArmValHum">90</span>°
+                  </label>
+                  <input type="range" id="rightBackArmHum" min="0" max="180" value="90" />
+                </div>
+                <div class="slider-row">
+                  <label for="rightForeArmHum">Fore-Arm Up-Down:
+                    <span id="rightForeArmValHum">90</span>°
+                  </label>
+                  <input type="range" id="rightForeArmHum" min="0" max="180" value="90" />
+                </div>
+                <div class="slider-row">
+                  <label for="rightForeRotateHum">Fore-Arm Rotate:
+                    <span id="rightForeRotateValHum">90</span>°
+                  </label>
+                  <input type="range" id="rightForeRotateHum" min="0" max="180" value="90" />
+                </div>
+                <div class="slider-row">
+                  <label for="rightFistHum">Fist-Open:
+                    <span id="rightFistValHum">90</span>°
+                  </label>
+                  <input type="range" id="rightFistHum" min="0" max="180" value="90" />
+                </div>
+              </div>
+
+              <!-- Washing Machine -->
+              <div class="control-section">
+                <div class="control-title">Washing Machine</div>
+                <div class="control-row">
+                  <button class="ctrl-btn" onclick="sendCommand('/washing/start')">Start</button>
+                </div>
+              </div>
+
+              <!-- Cooking -->
+              <div class="control-section">
+                <div class="control-title">Cooking</div>
+                <div class="checkbox-row">
+                  <label>
+                    <input type="checkbox" id="chopCheckboxHum" />
+                    Start Chopping
+                  </label>
+                  <label>
+                    <input type="checkbox" id="cookCheckboxHum" />
+                    Start Cooking
+                  </label>
+                </div>
+              </div>
+
+              <!-- Dishwasher -->
+              <div class="control-section">
+                <div class="control-title">Dishwasher</div>
+                <div class="control-row">
+                  <button class="ctrl-btn" onclick="sendCommand('/dishwasher/start')">Start</button>
+                </div>
+              </div>
+
+              <!-- First Aid -->
+              <div class="control-section">
+                <div class="control-title">First Aid</div>
+                <div class="control-row">
+                  <button
+                    class="ctrl-toggle"
+                    data-state="off"
+                    onclick="toggleAndSend(this, '/toggle/first_aid', 'Open', 'Close')"
+                  >
+                    Open
+                  </button>
+                </div>
+              </div>
+
+              <!-- Refrigerator -->
+              <div class="control-section">
+                <div class="control-title">Refrigerator</div>
+                <div class="control-row">
+                  <button
+                    class="ctrl-toggle"
+                    data-state="off"
+                    onclick="toggleAndSend(this, '/toggle/fridge_door', 'Door Open', 'Door Close')"
+                  >
+                    Door Open
+                  </button>
+                  <button
+                    class="ctrl-toggle"
+                    data-state="off"
+                    onclick="toggleAndSend(this, '/toggle/fridge_power', 'Power On', 'Power Off')"
+                  >
+                    Power On
+                  </button>
+                </div>
+              </div>
+
+              <!-- Gardening / Agriculture -->
+              <div class="control-section">
+                <div class="control-title">Gardening / Agriculture</div>
+                <div class="control-row">
+                  <button
+                    class="ctrl-toggle"
+                    data-state="off"
+                    onclick="toggleAndSend(this, '/toggle/weed_cutter', 'Weed-Cutter Start', 'Weed-Cutter Stop')"
+                  >
+                    Weed-Cutter Start
+                  </button>
+                  <button
+                    class="ctrl-toggle"
+                    data-state="off"
+                    onclick="toggleAndSend(this, '/toggle/watering', 'Watering Start', 'Watering Stop')"
+                  >
+                    Watering Start
+                  </button>
+                  <button
+                    class="ctrl-toggle"
+                    data-state="off"
+                    onclick="toggleAndSend(this, '/toggle/pesticide', 'Pesticide Start', 'Pesticide Stop')"
+                  >
+                    Pesticide Start
+                  </button>
+                </div>
+              </div>
+
+              <!-- Waste Management -->
+              <div class="control-section">
+                <div class="control-title">Waste Management</div>
+                <div class="control-row">
+                  <button class="ctrl-btn" onclick="sendCommand('/waste/biodegradable')">
+                    Dump Biodegradable Waste
+                  </button>
+                  <button class="ctrl-btn" onclick="sendCommand('/waste/non_biodegradable')">
+                    Dump Non-Biodegradable Waste
+                  </button>
+                </div>
+                <div class="control-row">
+                  <button
+                    class="ctrl-toggle"
+                    data-state="off"
+                    onclick="toggleAndSend(this, '/toggle/vacuum', 'Vacuum & Mop Start', 'Vacuum & Mop Stop')"
+                  >
+                    Vacuum & Mop Start
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- CAR: Movement only -->
+            <div id="controls-car" class="controls-set">
+              <div class="control-section">
+                <div class="control-title">Car Movement</div>
+                <div class="control-row">
+                  <button class="ctrl-btn" onclick="sendCommand('/car/forward')">Forward</button>
+                  <button class="ctrl-btn" onclick="sendCommand('/car/backward')">Backward</button>
+                  <button class="ctrl-btn" onclick="sendCommand('/car/left')">Left</button>
+                  <button class="ctrl-btn" onclick="sendCommand('/car/right')">Right</button>
+                  <button class="ctrl-btn" onclick="sendCommand('/car/stop')">Brake</button>
+                </div>
+                <div class="slider-row">
+                  <label for="speedSliderCar">Speed:
+                    <span id="speedValueCar">0</span>
+                  </label>
+                  <input type="range" id="speedSliderCar" min="0" max="255" value="0" />
+                </div>
+              </div>
+            </div>
+
+            <!-- SHOPKEEPER: Movement + Shoulder + Arms -->
+            <div id="controls-shopkeeper" class="controls-set">
+              <!-- Movement -->
+              <div class="control-section">
+                <div class="control-title">Movement</div>
+                <div class="control-row">
+                  <button class="ctrl-btn" onclick="sendCommand('/shop/forward')">Forward</button>
+                  <button class="ctrl-btn" onclick="sendCommand('/shop/backward')">Backward</button>
+                  <button class="ctrl-btn" onclick="sendCommand('/shop/left')">Left</button>
+                  <button class="ctrl-btn" onclick="sendCommand('/shop/right')">Right</button>
+                  <button class="ctrl-btn" onclick="sendCommand('/shop/stop')">Brake</button>
+                </div>
+                <div class="slider-row">
+                  <label for="speedSliderShop">Speed:
+                    <span id="speedValueShop">0</span>
+                  </label>
+                  <input type="range" id="speedSliderShop" min="0" max="255" value="0" />
+                </div>
+              </div>
+
+              <!-- Shoulder Movement -->
+              <div class="control-section">
+                <div class="control-title">Shoulder Movement</div>
+                <div class="control-row">
+                  <button class="ctrl-btn" onclick="sendCommand('/shop_shoulder/front')">Front</button>
+                  <button class="ctrl-btn" onclick="sendCommand('/shop_shoulder/back')">Back</button>
+                  <button class="ctrl-btn" onclick="sendCommand('/shop_shoulder/right')">Right</button>
+                  <button class="ctrl-btn" onclick="sendCommand('/shop_shoulder/left')">Left</button>
+                </div>
+              </div>
+
+              <!-- Left Arm Movement -->
+              <div class="control-section">
+                <div class="control-title">Left Arm Movement</div>
+                <div class="slider-row">
+                  <label for="leftShoulderShop">Shoulder Up-Down:
+                    <span id="leftShoulderValShop">90</span>°
+                  </label>
+                  <input type="range" id="leftShoulderShop" min="0" max="180" value="90" />
+                </div>
+                <div class="slider-row">
+                  <label for="leftBackArmShop">Back-Arm Up-Down:
+                    <span id="leftBackArmValShop">90</span>°
+                  </label>
+                  <input type="range" id="leftBackArmShop" min="0" max="180" value="90" />
+                </div>
+                <div class="slider-row">
+                  <label for="leftForeArmShop">Fore-Arm Up-Down:
+                    <span id="leftForeArmValShop">90</span>°
+                  </label>
+                  <input type="range" id="leftForeArmShop" min="0" max="180" value="90" />
+                </div>
+                <div class="slider-row">
+                  <label for="leftForeRotateShop">Fore-Arm Rotate:
+                    <span id="leftForeRotateValShop">90</span>°
+                  </label>
+                  <input type="range" id="leftForeRotateShop" min="0" max="180" value="90" />
+                </div>
+                <div class="slider-row">
+                  <label for="leftFistShop">Fist-Open:
+                    <span id="leftFistValShop">90</span>°
+                  </label>
+                  <input type="range" id="leftFistShop" min="0" max="180" value="90" />
+                </div>
+              </div>
+
+              <!-- Right Arm Movement -->
+              <div class="control-section">
+                <div class="control-title">Right Arm Movement</div>
+                <div class="slider-row">
+                  <label for="rightShoulderShop">Shoulder Up-Down:
+                    <span id="rightShoulderValShop">90</span>°
+                  </label>
+                  <input type="range" id="rightShoulderShop" min="0" max="180" value="90" />
+                </div>
+                <div class="slider-row">
+                  <label for="rightBackArmShop">Back-Arm Up-Down:
+                    <span id="rightBackArmValShop">90</span>°
+                  </label>
+                  <input type="range" id="rightBackArmShop" min="0" max="180" value="90" />
+                </div>
+                <div class="slider-row">
+                  <label for="rightForeArmShop">Fore-Arm Up-Down:
+                    <span id="rightForeArmValShop">90</span>°
+                  </label>
+                  <input type="range" id="rightForeArmShop" min="0" max="180" value="90" />
+                </div>
+                <div class="slider-row">
+                  <label for="rightForeRotateShop">Fore-Arm Rotate:
+                    <span id="rightForeRotateValShop">90</span>°
+                  </label>
+                  <input type="range" id="rightForeRotateShop" min="0" max="180" value="90" />
+                </div>
+                <div class="slider-row">
+                  <label for="rightFistShop">Fist-Open:
+                    <span id="rightFistValShop">90</span>°
+                  </label>
+                  <input type="range" id="rightFistShop" min="0" max="180" value="90" />
+                </div>
+              </div>
+            </div>
+
+            <!-- EDUCATION & HEALTHCARE: HUD only for now -->
+            <div id="controls-education" class="controls-set">
+  <div class="control-section">
+    <div class="control-title">AI & Learning Platforms</div>
+    <div id="aiButtonContainer" class="ai-button-list"></div>
+  </div>
+</div>
+            <div id="controls-healthcare" class="controls-set">
+  <div class="control-section">
+    <div class="control-title">AI Healthcare & Wellness Tools</div>
+
+    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:0.6rem;">
+      Access free AI tools for symptom checks, mental health support, medical research,
+      and wellness guidance.
+    </p>
+
+    <div style="font-size:0.75rem;color:#ffbaba;line-height:1.4;margin-bottom:1rem;">
+      <strong>⚠️ Caution & Disclaimer:</strong><br>
+      All information provided through these tools is for general informational purposes only.
+      It is <strong>not a substitute</strong> for professional medical advice, diagnosis, or treatment.
+      We take no responsibility for any damage or loss caused.
+      Always consult a qualified doctor before taking medicines or medical tests.
+    </div>
+
+    <div id="healthcareButtonContainer" class="ai-button-list"></div>
+  </div>
+</div>
+
+            <!-- TRACKING MODE -->
+<div id="controls-tracking" class="controls-set">
+  <div class="control-section">
+    <div class="control-title">Tracking Map</div>
+
+    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:0.6rem;">
+      Interactive internet-based map.
+    </p>
+
+    <div
+      id="map"
+      style="
+        width: 100%;
+        height: 320px;
+        border-radius: 10px;
+        border: 1px solid rgba(0,255,255,0.25);
+        box-shadow: 0 0 15px rgba(0,255,255,0.2);
+      "
+    ></div>
+  </div>
+</div>
+        </section>
+
+        <!-- RIGHT SIDE: HUD PANEL -->
+        <section id="hudColumn" class="hud-panel fade-slide active-block">
+          <div class="hud-scan"></div>
+
+          <div class="hud-inner">
+            <div id="hudIcon" class="hud-icon mode-icon-humanoid"></div>
+            <div class="hud-status">AWAITING INPUT...</div>
+          </div>
+
+          <div class="hud-dot"></div>
+          <div class="hud-version">v.2.4.9</div>
+          <div class="hud-bars">
+            <div class="hud-bar"></div>
+            <div class="hud-bar"></div>
+            <div class="hud-bar"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Mode data
+    const modes = [
+      {
+        id: "humanoid",
+        label: "Humanoid",
+        description:
+          "General purpose assistance and companionship. This mode optimizes the humanoid's neural networks for everyday interaction, multitasking, and adaptive responses.",
+        iconClass: "mode-icon-humanoid",
+        controlsId: "controls-humanoid",
+        modeUrl: "/setmode/humanoid", // same for humanoid / shop / edu / health
+      },
+      {
+        id: "car",
+        label: "Car",
+        description:
+          "Autonomous vehicle operation and navigation. This mode activates advanced path-planning, obstacle avoidance, and GPS-based routing.",
+        iconClass: "mode-icon-car",
+        controlsId: "controls-car",
+        modeUrl: "/setmode/car",
+      },
+      {
+        id: "shopkeeper",
+        label: "Shop Keeper",
+        description:
+          "Inventory management and customer service. The humanoid supports billing assistance, stock monitoring, and interactive product guidance.",
+        iconClass: "mode-icon-shopkeeper",
+        controlsId: "controls-shopkeeper",
+        modeUrl: "/setmode/humanoid",
+      },
+      {
+        id: "education",
+        label: "Education",
+        description:
+          "Personalized tutoring and learning assistance. Adaptive difficulty, real-time feedback, and multimodal explanation systems are enabled.",
+        iconClass: "mode-icon-education",
+        controlsId: "controls-education",
+        modeUrl: "/setmode/humanoid",
+      },
+      {
+        id: "healthcare",
+        label: "Healthcare",
+        description:
+          "Patient monitoring and basic triage. This mode enables vital-sign observation, reminder systems, and safety-driven response protocols.",
+        iconClass: "mode-icon-healthcare",
+        controlsId: "controls-healthcare",
+        modeUrl: "/setmode/humanoid",
+      },
+      {
+        id: "tracking",
+        label: "Tracking",
+        description:
+          "Advanced object detection and surveillance. The humanoid focuses on target acquisition, path logging, and secure environment scanning.",
+        iconClass: "mode-icon-tracking",
+        controlsId: "controls-tracking",
+        modeUrl: null, // no message for tracking
+      },
+    ];
+
+    const modeButtonsContainer = document.getElementById("modeButtons");
+    const modeTitle = document.getElementById("modeTitle");
+    const modeDescription = document.getElementById("modeDescription");
+    const hudIcon = document.getElementById("hudIcon");
+    const textColumn = document.getElementById("textColumn");
+    const hudColumn = document.getElementById("hudColumn");
+
+    let currentModeId = "humanoid";
+
+    function sendCommand(path) {
+  fetch(path, { method: "GET" })
+    .catch(err => console.error("Command failed:", err));
+}
+
+    function toggleAndSend(button, path, onLabel, offLabel) {
+      const current = button.getAttribute("data-state") || "off";
+      const next = current === "off" ? "on" : "off";
+      button.setAttribute("data-state", next);
+
+      // Update label
+      button.textContent = next === "on" ? onLabel : offLabel;
+
+      // Update appearance
+      if (next === "on") {
+        button.classList.add("toggle-on");
+      } else {
+        button.classList.remove("toggle-on");
+      }
+
+      // Send command to ESP32 e.g. /toggle/fridge_power/on
+      sendCommand(path + "/" + next);
+    }
+
+    // Create mode buttons dynamically
+    modes.forEach((mode) => {
+      const btn = document.createElement("button");
+      btn.className = "mode-button";
+      btn.setAttribute("data-mode", mode.id);
+
+      const iconSpan = document.createElement("span");
+      iconSpan.className = "icon " + mode.iconClass;
+      btn.appendChild(iconSpan);
+
+      const labelNode = document.createTextNode(" " + mode.label);
+      btn.appendChild(labelNode);
+
+      // Mode click: send /setmode/... except tracking
+      btn.addEventListener("click", () => {
+        if (mode.modeUrl) {
+          sendCommand(mode.modeUrl);
+        }
+        setActiveMode(mode.id);
+      });
+
+      modeButtonsContainer.appendChild(btn);
+    });
+
+    function setActiveMode(modeId) {
+      const mode = modes.find((m) => m.id === modeId);
+      if (!mode) return;
+
+      currentModeId = modeId;
+
+      // Update buttons active state
+      const allButtons = modeButtonsContainer.querySelectorAll(".mode-button");
+      allButtons.forEach((btn) => {
+        const id = btn.getAttribute("data-mode");
+        if (id === modeId) {
+          btn.classList.add("active");
+        } else {
+          btn.classList.remove("active");
+        }
+      });
+
+      // Trigger minimal fade+slide animation
+      textColumn.classList.remove("active-block");
+      hudColumn.classList.remove("active-block");
+
+      // Hide all controls
+      document.querySelectorAll(".controls-set").forEach((el) => {
+        el.classList.remove("active-controls");
+      });
+
+      setTimeout(() => {
+        // Update text content
+        modeTitle.innerHTML =
+          mode.label.toUpperCase() + " <span>MODE</span>";
+        modeDescription.textContent = mode.description;
+
+        // Update HUD icon class
+        hudIcon.className = "hud-icon " + mode.iconClass;
+
+        // Show relevant controls (if any)
+        if (mode.controlsId) {
+          const controlsBlock = document.getElementById(mode.controlsId);
+          if (controlsBlock) {
+            controlsBlock.classList.add("active-controls");
+          }
+        }
+        // Initialize map only when Tracking mode is activated
+if (modeId === "tracking") {
+  setTimeout(initTrackingMap, 100);
+}
+
+        textColumn.classList.add("active-block");
+        hudColumn.classList.add("active-block");
+      }, 10);
+    }
+
+    function attachSlider(sliderId, valueSpanId, urlPrefix) {
+      const slider = document.getElementById(sliderId);
+      const valueSpan = document.getElementById(valueSpanId);
+      if (!slider || !valueSpan) return;
+
+      valueSpan.textContent = slider.value;
+
+      slider.addEventListener("input", () => {
+        valueSpan.textContent = slider.value;
+        sendCommand(urlPrefix + slider.value);
+      });
+    }
+
+    function attachCheckbox(id, urlPrefix) {
+      const cb = document.getElementById(id);
+      if (!cb) return;
+      cb.addEventListener("change", () => {
+        const state = cb.checked ? "on" : "off";
+        sendCommand(urlPrefix + state);
+      });
+    }
+
+    // Initialize default mode
+    setActiveMode(currentModeId);
+
+    // Attach sliders & checkboxes after DOM load
+    window.addEventListener("DOMContentLoaded", () => {
+      // Humanoid sliders
+      attachSlider("speedSliderHum", "speedValueHum", "/set/speed/humanoid/");
+      attachSlider("neckUpDownHum", "neckUpDownValHum", "/set/neck_ud/");
+      attachSlider("neckLeftRightHum", "neckLeftRightValHum", "/set/neck_lr/");
+
+      attachSlider("leftShoulderHum", "leftShoulderValHum", "/set/left_shoulder/");
+      attachSlider("leftBackArmHum", "leftBackArmValHum", "/set/left_back_arm/");
+      attachSlider("leftForeArmHum", "leftForeArmValHum", "/set/left_fore_arm/");
+      attachSlider("leftForeRotateHum", "leftForeRotateValHum", "/set/left_fore_rotate/");
+      attachSlider("leftFistHum", "leftFistValHum", "/set/left_fist/");
+
+      attachSlider("rightShoulderHum", "rightShoulderValHum", "/set/right_shoulder/");
+      attachSlider("rightBackArmHum", "rightBackArmValHum", "/set/right_back_arm/");
+      attachSlider("rightForeArmHum", "rightForeArmValHum", "/set/right_fore_arm/");
+      attachSlider("rightForeRotateHum", "rightForeRotateValHum", "/set/right_fore_rotate/");
+      attachSlider("rightFistHum", "rightFistValHum", "/set/right_fist/");
+
+      // Car sliders
+      attachSlider("speedSliderCar", "speedValueCar", "/set/speed/car/");
+
+      // Shopkeeper sliders
+      attachSlider("speedSliderShop", "speedValueShop", "/set/speed/shop/");
+      attachSlider("leftShoulderShop", "leftShoulderValShop", "/set/shop_left_shoulder/");
+      attachSlider("leftBackArmShop", "leftBackArmValShop", "/set/shop_left_back_arm/");
+      attachSlider("leftForeArmShop", "leftForeArmValShop", "/set/shop_left_fore_arm/");
+      attachSlider("leftForeRotateShop", "leftForeRotateValShop", "/set/shop_left_fore_rotate/");
+      attachSlider("leftFistShop", "leftFistValShop", "/set/shop_left_fist/");
+
+      attachSlider("rightShoulderShop", "rightShoulderValShop", "/set/shop_right_shoulder/");
+      attachSlider("rightBackArmShop", "rightBackArmValShop", "/set/shop_right_back_arm/");
+      attachSlider("rightForeArmShop", "rightForeArmValShop", "/set/shop_right_fore_arm/");
+      attachSlider("rightForeRotateShop", "rightForeRotateValShop", "/set/shop_right_fore_rotate/");
+      attachSlider("rightFistShop", "rightFistValShop", "/set/shop_right_fist/");
+
+      // Checkboxes (humanoid)
+      attachCheckbox("chopCheckboxHum", "/cook/chop/");
+      attachCheckbox("cookCheckboxHum", "/cook/cook/");
+    });
+    // ---------- Dustbin Alert Popups ----------
+let lastAlertTime = 0;
+let alertActive = false;
+
+function showAlert(message) {
+  if (alertActive) return; // prevent spam
+
+  alertActive = true;
+
+  const box = document.createElement("div");
+  box.style.position = "fixed";
+  box.style.top = "20px";
+  box.style.right = "20px";
+  box.style.padding = "15px 20px";
+  box.style.background = "rgba(255,0,0,0.85)";
+  box.style.color = "white";
+  box.style.borderRadius = "8px";
+  box.style.fontFamily = "Inter, sans-serif";
+  box.style.fontSize = "0.9rem";
+  box.style.boxShadow = "0 0 15px rgba(255,0,0,0.6)";
+  box.style.zIndex = "9999";
+  box.textContent = message;
+
+  document.body.appendChild(box);
+
+  setTimeout(() => {
+    box.remove();
+    alertActive = false;
+  }, 5000);  // show 5 seconds
+}
+
+function checkDustbinAlerts() {
+  fetch("/alert")
+    .then(res => res.text())
+    .then(result => {
+      const now = Date.now();
+
+      if (result === "bio" && now - lastAlertTime > 10000) {
+        showAlert("Biodegradable Dustbin is FULL!");
+        lastAlertTime = now;
+      }
+      else if (result === "nonbio" && now - lastAlertTime > 10000) {
+        showAlert("Non-Biodegradable Dustbin is FULL!");
+        lastAlertTime = now;
+      }
+    });
+}
+
+// Poll every 5 seconds
+setInterval(checkDustbinAlerts, 5000);
+
+const aiTools = [
+  {
+    name: "Google",
+    url: "https://www.google.com",
+    icon: "https://www.google.com/favicon.ico",
+    description: "General-purpose search engine for quick information lookup."
+  },
+  {
+    name: "Bing",
+    url: "https://www.bing.com",
+    icon: "https://www.bing.com/sa/simg/favicon-2x.ico",
+    description: "Microsoft’s AI-powered search engine."
+  },
+  {
+    name: "ChatGPT",
+    url: "https://chat.openai.com",
+    icon: "https://chat.openai.com/favicon.ico",
+    description: "Conversational AI for explanations, tutoring, coding, and creativity."
+  },
+  {
+    name: "DeepSeek AI",
+    url: "https://www.deepseek.com/en",
+    icon: "https://cdn-1.webcatalog.io/catalog/deepseek/deepseek-icon-filled-256.png",
+    description: "AI assistant focused on education, reasoning, coding, and research."
+  },
+  {
+    name: "Deep AI",
+    url: "https://deepai.org",
+    icon: "https://deepai.org/favicon.ico",
+    description: "AI research tools and APIs for learning and experimentation."
+  },
+  {
+    name: "Microsoft Copilot",
+    url: "https://copilot.microsoft.com",
+    icon: "https://img.icons8.com/?size=100&id=PxQoyT1s0uFh&format=png",
+    description: "Microsoft’s AI assistant for productivity and learning."
+  },
+  {
+    name: "GitHub Copilot",
+    url: "https://github.com/features/copilot",
+    icon: "https://github.githubassets.com/favicons/favicon.svg",
+    description: "AI-powered code completion and programming assistance."
+  },
+  {
+    name: "Gemini",
+    url: "https://gemini.google.com",
+    icon: "https://static.vecteezy.com/system/resources/previews/055/687/055/non_2x/rectangle-gemini-google-icon-symbol-logo-free-png.png",
+    description: "Google’s AI assistant for research and understanding."
+  },
+  {
+    name: "Claude",
+    url: "https://www.anthropic.com/claude",
+    icon: "https://www.anthropic.com/favicon.ico",
+    description: "AI assistant known for clear explanations and deep reasoning."
+  },
+  {
+    name: "Pi (Inflection)",
+    url: "https://www.pi.ai",
+    icon: "https://play-lh.googleusercontent.com/Ef7is-Xonqhs2agdsGarpTS_c1Is6Yvk-JhnL3qNvU1Nwdc7kn6Dml2IuCqlfa9Nuzk",
+    description: "Personal AI focused on conversation, learning, and emotional support."
+  },
+  {
+    name: "Socratic",
+    url: "https://socratic.org",
+    icon: "https://img.utdstc.com/icon/003/819/0038190aa334ad95542470c80db22676ddbd4ff2fb1de6eb7ca05d877d25d93a",
+    description: "AI-powered homework help using text and image recognition."
+  },
+  {
+    name: "Photomath",
+    url: "https://photomath.app",
+    icon: "https://photomath.app/favicon.ico",
+    description: "Step-by-step AI math problem solving."
+  },
+  {
+    name: "Brainly",
+    url: "https://brainly.com",
+    icon: "https://brainly.com/favicon.ico",
+    description: "Community-driven homework help with AI support."
+  },
+  {
+    name: "Quizlet Q-Chat",
+    url: "https://quizlet.com/qchat",
+    icon: "https://quizlet.com/favicon.ico",
+    description: "AI chatbot for studying with flashcards and quizzes."
+  },
+  {
+    name: "CheggMate",
+    url: "https://www.chegg.com/cheggmate",
+    icon: "https://www.chegg.com/favicon.ico",
+    description: "AI-powered tutoring integrated with Chegg."
+  },
+  {
+    name: "Khanmigo",
+    url: "https://www.khanmigo.ai",
+    icon: "https://img.icons8.com/?size=512&id=pvi2QSAAgwyj&format=png",
+    description: "GPT-powered tutor by Khan Academy."
+  },
+  {
+    name: "Century Tech",
+    url: "https://www.century.tech",
+    icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtYPPX5kTg_yPLCiMpcLQVwy4Gp_2CaruwSQ&s",
+    description: "Personalized learning paths using AI."
+  },
+  {
+    name: "Squirrel AI",
+    url: "https://squirrelai.com",
+    icon: "https://media.licdn.com/dms/image/v2/D560BAQFA-nKAkwqFhg/company-logo_200_200/company-logo_200_200/0/1711262218011/squirrelai_logo",
+    description: "Adaptive AI learning platform with analytics."
+  },
+  {
+    name: "Duolingo AI",
+    url: "https://blog.duolingo.com/duolingo-max",
+    icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9PTTAoWWFyphx8zp5sOsQHTISl9NyuFnkkQ&s",
+    description: "Conversational AI for language learning."
+  },
+  {
+    name: "Replika",
+    url: "https://replika.com",
+    icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_ShlCSRr0qS9d6H60uTHViH2DnmT1cGzcLQ&s",
+    description: "AI companion for self-reflection and guided conversation."
+  },
+  {
+    name: "Tynker Chatbot",
+    url: "https://www.tynker.com/community/projects/play/ai-chatbot/610f4f8454a1f359901b1dca",
+    icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWooJgZ67kGtbfXkzepqJlqhrir-WcYTcbhA&s",
+    description: "Introduces kids to coding and STEM using AI."
+  }
+];
+
+function renderEducationButtons() {
+  const container = document.getElementById("aiButtonContainer");
+  if (!container) return;
+
+  container.innerHTML = aiTools.map(tool => `
+    <a class="ai-button" href="${tool.url}" target="_blank" rel="noopener noreferrer">
+      <img src="${tool.icon}" class="ai-icon" alt="${tool.name}">
+      <span>${tool.name}</span>
+      <div class="ai-tooltip">${tool.description}</div>
+    </a>
+  `).join("");
+}
+
+window.addEventListener("DOMContentLoaded", renderEducationButtons);
+
+const healthcareTools = [
+  {
+    name: "Ubie",
+    url: "https://ubiehealth.com/symptom-checker",
+    icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwUPVDGQa8OfgOwmuAhga3AbsGxN4_LyQTmQ&s",
+    description: "AI-powered symptom checker that asks guided questions and suggests possible conditions."
+  },
+  {
+    name: "PubMed MediQuery (ChatGPT)",
+    url: "https://chatgpt.com/g/g-Noj0znWbr-pubmed-mediquery",
+    icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQA0A2yawZtPdUIWQnw4rEi-C2lQroWDQTDtQ&s",
+    description: "Uses PubMed data to help analyze and summarize medical research papers."
+  },
+  {
+    name: "Ada Health",
+    url: "https://ada.com",
+    icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMUcIALBC7aGUJLdOgJBojvTBp7vTNhIy3Dg&s",
+    description: "AI tool that helps understand symptoms and suggests next medical steps."
+  },
+  {
+    name: "Buoy Health",
+    url: "https://www.buoyhealth.com",
+    icon: "https://upload.wikimedia.org/wikipedia/commons/f/f4/Buoy_Health%2C_Inc.%2C_logo.jpg",
+    description: "Interactive symptom checker that recommends care options."
+  },
+  {
+    name: "PubMed",
+    url: "https://pubmed.ncbi.nlm.nih.gov",
+    icon: "https://www.nlm.nih.gov/bsd/pubmed_logo.png",
+    description: "Free database of biomedical and life science research articles."
+  },
+  {
+    name: "K Health",
+    url: "https://www.khealth.com",
+    icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFqjvbIRYaIc024CioyWj2pUzUHYpDLe613g&s",
+    description: "Uses real clinical data for symptom analysis and doctor consultation (login required)."
+  },
+  {
+    name: "Healthily (Your.MD)",
+    url: "https://www.livehealthily.com",
+    icon: "https://play-lh.googleusercontent.com/qgaxfSZ1wh5WD1t0m5e8Qo-dosg7nWGndxBqqY5EjYs82B2S-KSi8CZF1uUZ89cZXCA",
+    description: "Medically verified self-care advice and everyday health guidance."
+  },
+  {
+    name: "Woebot",
+    url: "https://woebothealth.com",
+    icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQ_Syj-c_Y6MruswLhz2oOsUgL0vwb-AxyGg&s",
+    description: "CBT-based AI companion for managing stress, mood, and anxiety."
+  },
+  {
+    name: "Wysa",
+    url: "https://www.wysa.io",
+    icon: "https://play-lh.googleusercontent.com/_2t27Nwv0sJgq3XsUCP-haxf0C17xzIEVtO4Pfrp_cSJG-VJAWzIC0DAlVF2kEx8ol2M",
+    description: "Mental health AI chatbot for emotional wellness and self-care."
+  },
+  {
+    name: "Florence",
+    url: "https://florence.chat",
+    icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKpvPxE-DGZFN844KWGYqcj24bKwzHVASIIQ&s",
+    description: "AI assistant for medication reminders and health tracking."
+  }
+];
+
+function renderHealthcareButtons() {
+  const container = document.getElementById("healthcareButtonContainer");
+  if (!container) return;
+
+  container.innerHTML = healthcareTools.map(tool => `
+    <a class="ai-button" href="${tool.url}" target="_blank" rel="noopener noreferrer">
+      <img src="${tool.icon}" class="ai-icon" alt="${tool.name}">
+      <span>${tool.name}</span>
+      <div class="ai-tooltip">${tool.description}</div>
+    </a>
+  `).join("");
+}
+
+window.addEventListener("DOMContentLoaded", renderHealthcareButtons);
+// ===== Tracking Mode Map =====
+let mapInitialized = false;
+let mapInstance = null;
+
+function initTrackingMap() {
+  if (mapInitialized) return;
+
+  mapInstance = L.map("map").setView([20.5937, 78.9629], 5); // India center
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "© OpenStreetMap contributors"
+  }).addTo(mapInstance);
+
+  mapInitialized = true;
+}
+const scheduleBtn = document.getElementById("scheduleBtn");
+const schedulerPanel = document.getElementById("schedulerPanel");
+
+scheduleBtn.onclick = () => {
+  schedulerPanel.style.display =
+    schedulerPanel.style.display === "none" ? "block" : "none";
+};
+const schedules = [];
+
+function addSchedule() {
+  const h = schHour.value.padStart(2, "0");
+  const m = schMin.value.padStart(2, "0");
+  const s = schSec.value.padStart(2, "0");
+
+  const days = [...schedulerPanel.querySelectorAll("input[type=checkbox]:checked")]
+    .map(cb => parseInt(cb.value));
+
+  if (!days.length) {
+    alert("Select at least one day");
+    return;
+  }
+
+  schedules.push({
+    time: `${h}:${m}:${s}`,
+    days,
+    task: taskSelect.value
+  });
+
+  renderSchedules();
+}
+
+function renderSchedules() {
+  scheduleList.innerHTML = "";
+  schedules.forEach(s => {
+    scheduleList.innerHTML += `
+      <div>⏰ ${s.time} | Days: ${s.days.join(",")} </div>
+    `;
+  });
+}
+setInterval(() => {
+  const now = new Date();
+  const currentTime =
+    now.getHours().toString().padStart(2,"0") + ":" +
+    now.getMinutes().toString().padStart(2,"0") + ":" +
+    now.getSeconds().toString().padStart(2,"0");
+
+  const today = now.getDay(); // 0=Sun
+
+  schedules.forEach(s => {
+    if (s.time === currentTime && s.days.includes(today)) {
+      sendCommand(s.task);
+    }
+  });
+}, 1000);
+
+  </script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</body>
+</html>
